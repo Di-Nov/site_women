@@ -9,11 +9,12 @@ urlpatterns = [
     path('', views.WomenHome.as_view(), name='home'),
     path('about/', views.about, name='about'),
     path('contact/', views.contact, name='contact'),
+    path('add_post/', views.AddPage.as_view(), name='add_post'),
     path('auth/', views.login, name='login'),
-    path('post/<slug:post_slug>/', views.show_post, name='show_post'),
-    path('category/<slug:cat_slug>/', views.show_category, name='category'),
-    path('tag/<slug:tag_slug>/', views.show_tag_postlist, name='tag'),
-    path('add_post/', views.AddPage.as_view(), name='add_post')
+    path('post/<slug:post_slug>/', views.ShowPost.as_view(), name='show_post'),
+    path('category/<slug:cat_slug>/', views.WomenCategory.as_view(), name='category'),
+    path('tag/<slug:tag_slug>/', views.TagPostList.as_view(), name='tag'),
+    path('edit_post/<int:pk>/', views.UpdatePage.as_view(), name='edit_post')
 ]
 
 handler404 = page_not_found
