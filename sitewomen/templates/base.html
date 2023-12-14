@@ -1,8 +1,7 @@
-<!DOCTYPE html>
-
 {% load static %}
 {% load women_tags %}
 
+<!DOCTYPE html>
 <html>
 <head>
 	<title>{{title}}</title>
@@ -43,9 +42,9 @@
 
 		<li>{% show_all_tags %}</li>
 	</ul>
-   </td>
-   <!-- Конец Sidebar'а -->
-   <td valign="top" class="content">
+</td>
+<!-- Конец Sidebar'а -->
+<td valign="top" class="content">
 	<!-- Хлебные крошки -->
 	{% block breadcrumbs %}
 	{% endblock %}
@@ -56,6 +55,9 @@
 {% endblock %}
 	</div>
 <!-- Конец блока контента -->
+
+{% block navigation %}
+{% endblock %}
 
 </td></tr></table>
 </td></tr>

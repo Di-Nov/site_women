@@ -11,6 +11,7 @@ menu = [
 class DataMixin:
     title_page = None
     extra_context = {}
+    paginate_by = 4
 
     def __init__(self):
         if self.title_page:
