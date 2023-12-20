@@ -71,6 +71,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.contrib.messages.context_processors.messages',
+                'users.context_processors.get_women_context'
             ],
         },
     },
@@ -126,7 +128,9 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = '/static/'
+STATIC_URL = '/static/' # строка с префиксом URL-адреса для статических файлов
+
+# STATIC_ROOT = # путь к общей папке со статическими файлами (содержимое формируется командой collectstatic). Как понимаю при деплое проекта
 
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
@@ -134,8 +138,8 @@ STATICFILES_DIRS = [
 
 INTERNAL_IPS = ["127.0.0.1"]
 
-# Место загрузки файлов по умолчанию.
-MEDIA_ROOT = BASE_DIR / 'media'
+
+MEDIA_ROOT = BASE_DIR / 'media' # каталог размещения медиа-файлов (для загрузки и чтения). Место загрузки файлов по умолчанию.
 
 # Прописываем путь URL к медиа, чтоб при генерации url файлов из моделей, к ним прибавлялся /media/
 # Не забываем прописать urlpatterns += (их конкатенация) в urls.py
@@ -146,4 +150,8 @@ MEDIA_URL = '/media/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+LOGIN_REDIRECT_URL = 'home' # задает URL-адрес, на который следует перенаправлять пользователя после успешной авторизации.
+# приоритет ниже чем ниже чем у get_sucsess_url и чем у параметра next в forms.py, что хорошо.
 
+LOGOUT_REDIRECT_URL = 'home' # задает URL-адрес, на который перенаправляется пользователя после выхода из системы
+LOGIN_URL = 'users:login'  # определяет URL-адрес, на который следует перенаправить неавторизованного пользователя при попытке посетить закрытую страницу сайта

@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator, MinLengthValidator, MaxLengthValidator
 from django.db import models
 from django.shortcuts import render
@@ -23,7 +24,8 @@ class WomenModel(models.Model):
     cat = models.ForeignKey('Category', on_delete=models.PROTECT, related_name='cat_post', verbose_name='Категория')
     tags = models.ManyToManyField('TagPost', blank=True, related_name='tags_post', verbose_name='Теги')
     husband = models.OneToOneField('Husband', on_delete=models.SET_NULL, blank=True, null=True,
-                                   related_name='woman', verbose_name='Муж')
+                               related_name='woman', verbose_name='Муж')
+    author = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, related_name='posts', null=True, default=None)
 
     objects = models.Manager()
     published = PublishedManager()
