@@ -5,7 +5,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse, reverse_lazy
 
-from users.forms import LoginUserForm
+from users.forms import LoginUserForm, RegisterUserForm
 
 
 class LoginUser(LoginView):
@@ -21,6 +21,22 @@ class LoginUser(LoginView):
     #     ''' Имеет больший приоритет чем параметр next в forms.py, поэтому лучше использовать LOGIN_REDIRECT_URL = 'home'
     #      в связке с параметром next в forms.py (сормируется самостоятельно и передается в шаблон)'''
     #     return reverse_lazy('home')
+
+def refister_user(request):
+    if request.method == 'POST':
+        form = RegisterUserForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)  # создание объекта без сохранения в БД
+            user.set_password(request.POST['password'])
+            user.save()
+            return render(request, 'users/register_done.html')
+    else:
+        form = RegisterUserForm()
+    return render(request, 'users/register.html', {'form': form})
+
+
+
+
 
 
 # def login_user(request):
