@@ -45,3 +45,23 @@ class RegisterUserForm(UserCreationForm):
         if User.objects.filter(email=email).exists():
             raise ValidationError('Такой E-mail уже существует')
         return email
+
+
+# class ProfileForm(forms.ModelForm):
+#     username = forms.CharField(disabled=True, label='Имя', widget=forms.TextInput(attrs={'class': 'form-input'}))
+#     email = forms.CharField(disabled=True, label='E-mail', widget=forms.EmailInput(attrs={'class': 'form-input'}))
+#
+#     class Meta:
+#         model = get_user_model()
+#         fields = ['username', 'email', 'first_name', 'last_name']
+#         labels = {
+#             'first_name': 'Имя',
+#             'last_name': 'Фамилия',
+#         }
+#         widgets = {
+#             'first_name': forms.TextInput(attrs={'class': 'form-input'}),
+#             'last_name': forms.EmailInput(attrs={'class': 'form-input'})
+#         }
+
+
+
