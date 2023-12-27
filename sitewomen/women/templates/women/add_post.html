@@ -5,9 +5,12 @@
 {% block content %}
 <form action="" method="post" enctype="multipart/form-data">
     {% csrf_token %}
+<!-- form.non_field_errors - список ошибок, общих при некорректном заполнении формы  -->
     <div class="form-error">{{ form.non_field_errors }}</div>
     {% for f in form %}
+<!-- f.id_for_label - идентификатор для тега label текущего поля -->
     <p><label class="form-label" for="{{ f.id_for_label }}">{{f.label}}: </label>{{ f }}</p>
+<!-- f.errors - список ошибок заполнения поля формы -->
     <div class="form-error">{{ f.errors }}</div>
     {% endfor %}
     <button type="submit">Добавить</button>

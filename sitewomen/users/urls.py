@@ -9,7 +9,7 @@ app_name = 'users' # Записывается при указании spacename 
 urlpatterns = [
     path('login/', views.LoginUser.as_view(), name='login'),
     path('logout/', LogoutView.as_view(), name='logout'),
-    path('register/', views.refister_user, name='register'),
+    path('register/', views.RegisterUser.as_view(), name='register'),
 ]
 
 

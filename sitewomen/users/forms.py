@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth import get_user_model
-from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 
@@ -20,25 +20,25 @@ class LoginUserForm(AuthenticationForm):
                   'password']  # отображаем поля 'username', 'password', но чтоб к нему прикрутились виждеты, переопределим атрибутами
 
 
-class RegisterUserForm(forms.ModelForm):
+
+class RegisterUserForm(UserCreationForm):
     username = forms.CharField(max_length=50, label='Логин')
-    password = forms.CharField(max_length=50, label='Пароль', widget=forms.PasswordInput())
+    password1 = forms.CharField(max_length=50, label='Пароль', widget=forms.PasswordInput())
     password2 = forms.CharField(max_length=50, label='Повтор пароля', widget=forms.PasswordInput())
 
     class Meta:
         model = get_user_model()
-        fields = ['username', 'first_name', 'last_name', 'email', 'password', 'password2']
+        fields = ['username', 'first_name', 'last_name', 'email', 'password1', 'password2']
         labels = {
             'first_name': 'Имя',
             'last_name': 'Фамилия',
             'email': 'E-mail',
         }
-
-    def clean_password2(self):  # Ручная валидация поля password2. Вернуть password2
-        cd = self.cleaned_data
-        if cd['password'] != cd['password2']:
-            raise ValidationError('Пароли не совпадают')
-        return cd['password2']
+        widgets = {
+            'email': forms.TextInput(attrs={'class': 'form-input'}),
+            'first_name': forms.TextInput(attrs={'class': 'form-input'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-input'}),
+        }
 
     def clean_email(self):  # Ручная валидация поля email. Вернуть email
         email = self.cleaned_data['email']

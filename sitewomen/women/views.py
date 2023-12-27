@@ -84,7 +84,7 @@ class UpdatePage(LoginRequiredMixin, DataMixin, UpdateView): # LoginRequiredMixi
 
 
 class AddPage(LoginRequiredMixin, DataMixin, CreateView):
-    '''метод form_valid() уже реализован внутри класса CreateView'''
+    '''метод form_valid() уже реализован внутри класса CreateView, используется только для присвоения значения author'''
 
     template_name = 'women/add_post.html'
     form_class = AddPostForm
