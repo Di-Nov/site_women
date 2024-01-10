@@ -1,4 +1,4 @@
-from django.contrib.auth import logout, authenticate, login, get_user_model
+from django.contrib.auth import logout, authenticate, login
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView
@@ -7,7 +7,7 @@ from django.shortcuts import render
 from django.urls import reverse, reverse_lazy
 from django.views.generic import CreateView, UpdateView
 
-from users.forms import LoginUserForm, RegisterUserForm, ProfileForm
+from users.forms import LoginUserForm, RegisterUserForm, ProfileUserForm
 
 
 class LoginUser(LoginView):
@@ -21,7 +21,7 @@ class LoginUser(LoginView):
 
     # def get_success_url(self):
     #     ''' Имеет больший приоритет чем параметр next в forms.py, поэтому лучше использовать LOGIN_REDIRECT_URL = 'home'
-    #      в связке с параметром next в forms.py (Формируется самостоятельно и передается в шаблон)'''
+    #      в связке с параметром next в forms.py (сормируется самостоятельно и передается в шаблон)'''
     #     return reverse_lazy('home')
 
 class RegisterUser(CreateView):
@@ -30,17 +30,15 @@ class RegisterUser(CreateView):
     success_url = reverse_lazy('users:login')
     extra_context = {'title': "Регистрация"}
 
-# class ProfileUser(LoginRequiredMixin, UpdateView):
-#     model = get_user_model()
-#     form_class = ProfileForm
-#     template_name = 'users/profile.html'
-#     extra_context = {'title', 'Профиль'}
-#     success_url = reverse_lazy('users:profile')
-#
-#     def get_object(self, queryset=None):
-#         return self.request.user
 
+class ProfileUser(LoginRequiredMixin, UpdateView):
+    form_class = ProfileUserForm
+    template_name = 'users/profile.html'
+    extra_context = {'title': "Профиль пользователя"}
+    success_url = reverse_lazy('users:profile')
 
+    def get_object(self, queryset=None):
+        return self.request.user
 
 
 
