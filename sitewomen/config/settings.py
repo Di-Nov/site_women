@@ -162,3 +162,4 @@ AUTHENTICATION_BACKENDS = [
     'users.authentication.EmailAuthBackend', # Аутентификация, которую мы прописали сами (По Email) идет после стандатной
 ]
 
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend" # настройка бэкенда для отправки электронной почты

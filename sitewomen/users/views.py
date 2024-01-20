@@ -44,7 +44,7 @@ class ProfilePasswordChangeView(PasswordChangeView):
     form_class = UserPasswordChangeForm
     template_name = 'users/password_change_form.html'
     success_url = reverse_lazy('users:password_change_done')
-    extra_context = 'Изменение пароля'
+    extra_context = {'title': 'Изменение пароля'}
 
 
 # def register_user(request):
