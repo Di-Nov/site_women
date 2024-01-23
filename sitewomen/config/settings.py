@@ -162,4 +162,22 @@ AUTHENTICATION_BACKENDS = [
     'users.authentication.EmailAuthBackend', # Аутентификация, которую мы прописали сами (По Email) идет после стандатной
 ]
 
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend" # настройка бэкенда для отправки электронной почты
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend" # настройка бэкенда для отправки электронной почты
+
+EMAIL_HOST = 'smtp.gmail.com' # Host Google
+EMAIL_PORT = 587 # Порт Google
+EMAIL_HOST_USER = 'novozhilov812@gmail.com' # Почта от которой приходит письмо на смену пароля.
+EMAIL_HOST_PASSWORD = 'uqol vejk egcy nphr' # Пароль генерируется из почты google, управление м паролей почты.
+EMAIL_USE_SSL = False
+EMAIL_USE_TLS = True # Предпочтительней чем SSL, пишут что более надежный метод защиты. Яндекс использует SSL.
+EMAIL_ADMIN = EMAIL_HOST_USER # Делаем почту админа - стандартной почтой
+SERVER_EMAIL = EMAIL_HOST_USER # Делаем почту сервера - стандартной почтой
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER # Делаем почту по умолчанию - стандартной почтой
+
+AUTH_USER_MODEL = 'users.User'
+'''
+Переопределяем модель User, на ту что прописали сами унаследованную от AbstractUser. 
+Сначала имя используемой модели в текущем проекте фреймворка Django, по умолчанию использовалось значение 'auth.User'
+'''
+
+DEFAULT_USER_IMAGE = MEDIA_URL + 'users/default.png'
