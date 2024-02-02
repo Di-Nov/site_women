@@ -1,9 +1,10 @@
+from captcha.fields import CaptchaField
 from django import forms
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator, MaxLengthValidator, MinLengthValidator
 from django.utils.deconstruct import deconstructible
 
-from .models import Category, Husband, WomenModel
+from .models import Category, Husband, Women
 
 
 @deconstructible
@@ -28,7 +29,7 @@ class AddPostForm(forms.ModelForm):
                                      label="Муж")
 
     class Meta:
-        model = WomenModel
+        model = Women
         fields = ['title', 'slug', 'content', 'photo', 'is_published', 'cat', 'husband', 'tags']
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-input'}),
@@ -47,6 +48,12 @@ class AddPostForm(forms.ModelForm):
 
 class UploadFileForm(forms.Form):
     file = forms.FileField(label='Файл', required=True)
+
+class FeedBackPost(forms.Form):
+    name = forms.CharField(label='Имя', max_length=255)
+    email = forms.EmailField(label='E-mail')
+    content = forms.CharField(label='Описание', widget=forms.Textarea(attrs={'cols': 60, 'rows': 10}))
+    captcha = CaptchaField(label='Проверка')
 
 
 # Пример построение форм без привязки к моделям.

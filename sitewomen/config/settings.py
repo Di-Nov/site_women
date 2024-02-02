@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-z#6euuyce@ns6v$)(tx6z-e!6ui*ku!_adv*kc#v7db_h5ff^8
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'sitewomen.ru']
 
 
 # Application definition
@@ -40,21 +40,32 @@ INSTALLED_APPS = [
 
     'django_extensions',
     "debug_toolbar",
+    'social_django',
 
     'women.apps.WomenConfig',
     'users.apps.UsersConfig',
+    'captcha',
+    'django.contrib.sites',
+    'django.contrib.sitemaps',
 ]
 
 MIDDLEWARE = [
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    # 'django.middleware.cache.UpdateCacheMiddleware',  # Используется при условии Кэширования всего сайта.
     'django.middleware.common.CommonMiddleware',
+    # 'django.middleware.cache.FetchFromCacheMiddleware',  # Используется при условии Кэширования всего сайта.
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    "debug_toolbar.middleware.DebugToolbarMiddleware",
 ]
+
+# CACHE_MIDDLEWARE_ALIAS = 'default'  # Нижние 3 параметра используются при условии Кэширования всего сайта.
+# CACHE_MIDDLEWARE_SECONDS = 10
+# CACHE_MIDDLEWARE_KEY_PREFIX = 'sitewomen'
+
 
 ROOT_URLCONF = 'config.urls'
 
@@ -85,14 +96,31 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-
+#
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'sitewomen_db',
+        'USER': 'sitewomen',
+        'PASSWORD': '123',
+        'HOST': 'localhost',
+        'PORT': 5432,
     }
 }
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379",
+    }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -160,6 +188,7 @@ LOGIN_URL = 'users:login'  # определяет URL-адрес, на кото�
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend', # Аутентификация по умолчанию, если она одна, прописывать не обязательно
     'users.authentication.EmailAuthBackend', # Аутентификация, которую мы прописали сами (По Email) идет после стандатной
+    'social_core.backends.github.GithubOAuth2',  # Аутентификация через Github при помощи библиотеки python-social-auth
 ]
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend" # настройка бэкенда для отправки электронной почты
@@ -174,10 +203,38 @@ EMAIL_ADMIN = EMAIL_HOST_USER # Делаем почту админа - стан�
 SERVER_EMAIL = EMAIL_HOST_USER # Делаем почту сервера - стандартной почтой
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER # Делаем почту по умолчанию - стандартной почтой
 
-AUTH_USER_MODEL = 'users.User'
+AUTH_USER_MODEL = 'users.User'  # модель пользователя, используемая в текущем проекте
 '''
 Переопределяем модель User, на ту что прописали сами унаследованную от AbstractUser. 
 Сначала имя используемой модели в текущем проекте фреймворка Django, по умолчанию использовалось значение 'auth.User'
 '''
 
 DEFAULT_USER_IMAGE = MEDIA_URL + 'users/default.png'
+
+
+SOCIAL_AUTH_GITHUB_KEY = '7251532948a2447b330f'  # Ключ для аутентификации через GitHub
+SOCIAL_AUTH_GITHUB_SECRET = '3f14d6f20bc936bc6caa4890291a5c0a14ad3b6d'  # Секретный ключ для аутентификации через GitHub
+
+SOCIAL_AUTH_PIPELINE = (
+    'social_core.pipeline.social_auth.social_details',
+    'social_core.pipeline.social_auth.social_uid',
+    'social_core.pipeline.social_auth.auth_allowed',
+    'social_core.pipeline.social_auth.social_user',
+    'social_core.pipeline.user.get_username',
+    'social_core.pipeline.user.create_user',
+    'users.pipeline.new_users_handler',
+    'social_core.pipeline.social_auth.associate_user',
+    'social_core.pipeline.social_auth.load_extra_data',
+    'social_core.pipeline.user.user_details',
+)
+
+'''
+В документации 'https://python-social-auth' сказано, что мы можем в файле settings.py определить свой 
+модуль pipeline и прописать его в специальной коллекции, все другие модули в SOCIAL_AUTH_PIPELINE должны 
+быть указаны, иначе наш пользовательский модуль может работать некорректно. Теперь нужно создать 
+функцию new_users_handler() в users/pipeline.py
+Это все нужно для присвоения текущему пользователю определенной группы прав доступа. 
+SOCIAL_AUTH_PIPELINE запускается автоматически при авторизации через соц. сети
+'''
+
+SITE_ID = 1

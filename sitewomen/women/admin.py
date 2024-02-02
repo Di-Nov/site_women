@@ -1,7 +1,7 @@
 from django.contrib import admin, messages
 from django.utils.safestring import mark_safe
 
-from women.models import WomenModel, Category
+from women.models import Women, Category
 
 
 class MarriedFilter(admin.SimpleListFilter):
@@ -22,13 +22,13 @@ class MarriedFilter(admin.SimpleListFilter):
 
 
 
-@admin.register(WomenModel)
+@admin.register(Women)
 class WomenAdmin(admin.ModelAdmin):
 
-    list_display = ['id', 'title', 'post_photo', 'time_created', 'is_published', 'cat']
+    list_display = ['id', 'title', 'post_photo', 'time_create', 'is_published', 'cat']
     readonly_fields = ['post_photo']
     list_display_links = ['id', 'title']
-    ordering = ['time_created', 'title']
+    ordering = ['time_create', 'title']
     list_editable = ['is_published']
     list_per_page = 10
     actions = ['make_published', 'make_draft']
@@ -46,7 +46,7 @@ class WomenAdmin(admin.ModelAdmin):
 
 
     @admin.display(description='Изображение')
-    def post_photo(self, women: WomenModel):
+    def post_photo(self, women: Women):
         '''Добавление нового поля в админ-панели'''
         if women.photo:
             return mark_safe(f"<img src='{women.photo.url}' width=50>")
@@ -56,13 +56,13 @@ class WomenAdmin(admin.ModelAdmin):
     @admin.action(description='Сменить статус на опубликовано')
     def make_published(self, request, queryset):
         '''Добавление нового действия с выборкой полей в админ-панели'''
-        count = queryset.update(is_published=WomenModel.Status.PUBLISHED)
+        count = queryset.update(is_published=Women.Status.PUBLISHED)
         self.message_user(request, f"Изменено {count} записи(ей).")
 
     @admin.action(description='Снять с публикации')
     def make_draft(self, request, queryset):
         '''Добавление нового действия с выборкой полей в админ-панели'''
-        count = queryset.update(is_published=WomenModel.Status.DRAFT)
+        count = queryset.update(is_published=Women.Status.DRAFT)
         self.message_user(request, f"{count} записи(ей) снято с публикации.", messages.WARNING)
 
     # @admin.display(description='Количество символов в статье')

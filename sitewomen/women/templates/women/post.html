@@ -21,5 +21,9 @@
     <p ><img class="img-article-left thumb" src="{{post.photo.url}}"></p>
     {% endif %}
     <p>{{post.content|linebreaks}}</p>
+
+    {% if perms.women.change_women %}
+        <p ><a href="{% url 'edit_post' post.id %}">Редактировать</a></p>
+    {% endif %}
 {% endblock %}
 

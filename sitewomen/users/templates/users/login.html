@@ -13,4 +13,6 @@
     <button type="submit">Войти</button>
     <p><a href="{% url 'users:password_reset' %}">Забыли пароль?</a></p>
 </form>
+
+<p><a href="{% url 'social:begin' 'github' %}">Авторизоваться через GitHub</a></p>
 {% endblock %}

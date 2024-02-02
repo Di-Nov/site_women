@@ -1,23 +1,30 @@
 import uuid
 
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.http import HttpResponse, HttpResponseNotFound
 from django.shortcuts import render, reverse, redirect, get_object_or_404
 from django.urls import reverse_lazy
-from django.views.generic import ListView, DetailView, CreateView, UpdateView, TemplateView
+from django.views.generic import ListView, DetailView, CreateView, UpdateView, TemplateView, FormView
+from django.core.cache import cache
 
-from women.forms import AddPostForm, UploadFileForm
-from women.models import WomenModel, Category, TagPost
+from women.forms import AddPostForm, UploadFileForm, FeedBackPost
+from women.models import Women, Category, TagPost
 from women.utils import DataMixin
+
 
 
 class WomenHome(LoginRequiredMixin, DataMixin, ListView):
     template_name = 'women/index.html'
     context_object_name = 'posts'
 
-    def get_queryset(self):
-        return WomenModel.published.all().select_related('cat')
+    def get_queryset(self):  # Пример получения запроса с использованием cache
+        w_lst = cache.get('women_posts')
+        if not w_lst:
+            w_lst = Women.published.all().select_related('cat')
+            cache.set('women_posts', w_lst, 60)
+        return w_lst
+
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -30,7 +37,7 @@ class ShowPost(DataMixin, DetailView):
     slug_url_kwarg = 'post_slug'
 
     def get_object(self, queryset=None):
-        return get_object_or_404(WomenModel.published, slug=self.kwargs[self.slug_url_kwarg])
+        return get_object_or_404(Women.published, slug=self.kwargs[self.slug_url_kwarg])
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -44,10 +51,10 @@ def page_not_found(request, exception):
 class WomenCategory(DataMixin, ListView):
     template_name = 'women/index.html'
     context_object_name = 'posts'
-    allow_empty = False # флаг разрешения отображения страницы с пустым списком записей (для класса ListView)
+    allow_empty = False  # флаг разрешения отображения страницы с пустым списком записей (для класса ListView)
 
     def get_queryset(self):
-        return WomenModel.published.filter(cat__slug=self.kwargs['cat_slug']).select_related('cat')
+        return Women.published.filter(cat__slug=self.kwargs['cat_slug']).select_related('cat')
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -61,7 +68,7 @@ class TagPostList(DataMixin, ListView):
     allow_empty = False
 
     def get_queryset(self):
-        return WomenModel.published.filter(tags__slug=self.kwargs['tag_slug']).select_related('cat')
+        return Women.published.filter(tags__slug=self.kwargs['tag_slug']).select_related('cat')
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -69,33 +76,44 @@ class TagPostList(DataMixin, ListView):
         return self.get_mixin_context(context, title='Тег: ' + tag.tag, cat_selected=None)
 
 
-class UpdatePage(LoginRequiredMixin, DataMixin, UpdateView): # LoginRequiredMixin - Закрывает старницу для неавторизованного user,
+class UpdatePage(PermissionRequiredMixin, LoginRequiredMixin, DataMixin, UpdateView):
+    '''
+    LoginRequiredMixin - Закрывает страницу для неавторизованного user,
+    PermissionRequiredMixin в паре с permission_required указывают на разрешения пользователей
+    '''
     form_class = AddPostForm
-    model = WomenModel
+    model = Women
     # fields = ['title', 'content', 'photo', 'is_published', 'cat']
     template_name = 'women/add_post.html'
     success_url = reverse_lazy('home')
     title_page = 'Редактирование статьи'
-    login_url = reverse_lazy('user:login') # перенаправлят на login_url. приоритет выше чем у LOGIN_URL в настройках
+    login_url = reverse_lazy('user:login')  # перенаправляет на login_url. приоритет выше чем у LOGIN_URL в настройках
+    permission_required = 'women.change_women'  # <приложение>.<действие>_<таблица>
 
     def form_valid(self, form):
         form.save()
         return super().form_valid(form)
 
 
-class AddPage(LoginRequiredMixin, DataMixin, CreateView):
-    '''метод form_valid() уже реализован внутри класса CreateView, используется только для присвоения значения author'''
+class AddPage(PermissionRequiredMixin, LoginRequiredMixin, DataMixin, CreateView):
+    '''
+    LoginRequiredMixin - Закрывает страницу для неавторизованного user,
+    PermissionRequiredMixin в паре с permission_required указывают на разрешения пользователей
+    Mетод form_valid() уже реализован внутри класса CreateView, используется только для присвоения значения author
+    '''
 
     template_name = 'women/add_post.html'
     form_class = AddPostForm
     success_url = reverse_lazy('home')
     title_page = 'Добавление статьи'
     login_url = reverse_lazy('users:login')
+    permission_required = 'women.add_women'  # <приложение>.<действие>_<таблица>
 
     def form_valid(self, form):
         w = form.save(commit=False)
         w.author = self.request.user
         return super().form_valid(form)
+
 
 def handle_uploaded_file(f):
     """Функция используется для чтения файла который загружаем, его наименования и сохранении по заданому пути"""
@@ -110,8 +128,10 @@ def handle_uploaded_file(f):
         for chunk in f.chunks():
             destination.write(chunk)
 
-
-@login_required(login_url=reverse_lazy('users:login')) # Закрывает старницу для неавторизованного user, перенаправлят на login_url определяет URL-адрес. приоритет выше чем у LOGIN_URL в настройках
+@permission_required(perm='women.view_women' , raise_exception=True)  # Декратор для выдачи прав на просмотр функции about
+@login_required(login_url=reverse_lazy(
+    'users:login'))     # Закрывает старницу для неавторизованного user, перенаправлят на login_url определяет URL-адрес.
+                        # приоритет выше чем у LOGIN_URL в настройках
 def about(request):
     if request.method == 'POST':
         form = UploadFileForm(request.POST, request.FILES)
@@ -124,6 +144,12 @@ def about(request):
                   context={'title': 'О сайте', 'form': form})
 
 
-class FeedBack(DataMixin, TemplateView):
+class FeedBack(LoginRequiredMixin, DataMixin, FormView):
+    form_class = FeedBackPost
     template_name = 'women/feedback.html'
-    title_page = 'Обратная связь'
+    success_url = reverse_lazy('home')
+    title_page   = 'Обратная связь'
+
+    def form_valid(self, form):
+        print(form.cleaned_data)
+        return super().form_valid(form)
