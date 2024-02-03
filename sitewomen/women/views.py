@@ -14,7 +14,7 @@ from women.utils import DataMixin
 
 
 
-class WomenHome(LoginRequiredMixin, DataMixin, ListView):
+class WomenHome(DataMixin, ListView):
     template_name = 'women/index.html'
     context_object_name = 'posts'
 
